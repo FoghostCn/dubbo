@@ -23,7 +23,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 
-import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -67,12 +66,11 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         if (channel != null) {
-            channels.put(
-                    NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()), channel);
+            channels.put(NetUtils.toAddressString(channel.getRemoteAddress()), channel);
         }
         handler.connected(channel);
 
-        if (logger.isInfoEnabled()) {
+        if (logger.isInfoEnabled() && channel != null) {
             logger.info("The connection of " + channel.getRemoteAddress() + " -> " + channel.getLocalAddress()
                     + " is established.");
         }
@@ -82,8 +80,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
         try {
-            channels.remove(
-                    NetUtils.toAddressString((InetSocketAddress) ctx.channel().remoteAddress()));
+            channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
             handler.disconnected(channel);
         } finally {
             NettyChannel.removeChannel(ctx.channel());
