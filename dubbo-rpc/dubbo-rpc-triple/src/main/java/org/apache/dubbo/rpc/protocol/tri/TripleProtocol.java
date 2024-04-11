@@ -87,7 +87,7 @@ public class TripleProtocol extends AbstractProtocol {
         IGNORE_1_0_0_VERSION = conf.getBoolean(H2_SETTINGS_IGNORE_1_0_0_KEY, false);
         RESOLVE_FALLBACK_TO_DEFAULT = conf.getBoolean(H2_SETTINGS_RESOLVE_FALLBACK_TO_DEFAULT_KEY, true);
         PASS_THROUGH_STANDARD_HTTP_HEADERS = conf.getBoolean(H2_SETTINGS_PASS_THROUGH_STANDARD_HTTP_HEADERS, false);
-        HTTP3_ENABLED = conf.getBoolean(H3_SETTINGS_HTTP3_ENABLE, false);
+        HTTP3_ENABLED = conf.getBoolean(H3_SETTINGS_HTTP3_ENABLE, true);
     }
 
     @Override
@@ -213,7 +213,7 @@ public class TripleProtocol extends AbstractProtocol {
         super.destroy();
     }
 
-    private boolean isHttp3Enabled(URL url) {
+    public static boolean isHttp3Enabled(URL url) {
         return HTTP3_ENABLED || url.getParameter(Constants.HTTP3_KEY, false);
     }
 }

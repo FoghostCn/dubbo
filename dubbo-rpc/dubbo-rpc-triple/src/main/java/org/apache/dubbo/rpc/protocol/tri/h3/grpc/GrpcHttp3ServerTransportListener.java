@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.http3.Http3TransportListener;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.protocol.tri.h12.grpc.GrpcHttp2ServerTransportListener;
 
-public class GrpcHttp3ServerTransportListener extends GrpcHttp2ServerTransportListener
+public final class GrpcHttp3ServerTransportListener extends GrpcHttp2ServerTransportListener
         implements Http3TransportListener {
 
     public GrpcHttp3ServerTransportListener(H2StreamChannel h2StreamChannel, URL url, FrameworkModel frameworkModel) {
@@ -38,4 +38,7 @@ public class GrpcHttp3ServerTransportListener extends GrpcHttp2ServerTransportLi
         }
         super.doOnData(message);
     }
+
+    @Override
+    protected void initializeAltSvc(URL url) {}
 }

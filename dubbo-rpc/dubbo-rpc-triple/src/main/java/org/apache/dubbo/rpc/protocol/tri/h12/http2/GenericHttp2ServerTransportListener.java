@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.io.StreamUtils;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.threadpool.serial.SerializingExecutor;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.http12.HttpMethods;
 import org.apache.dubbo.remoting.http12.exception.HttpStatusException;
 import org.apache.dubbo.remoting.http12.h2.H2StreamChannel;
@@ -43,6 +44,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.ReflectionPackableMethod;
 import org.apache.dubbo.rpc.protocol.tri.RpcInvocationBuildContext;
+import org.apache.dubbo.rpc.protocol.tri.TripleProtocol;
 import org.apache.dubbo.rpc.protocol.tri.h12.AbstractServerTransportListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.BiStreamServerCallListener;
 import org.apache.dubbo.rpc.protocol.tri.h12.HttpMessageListener;
@@ -152,6 +154,14 @@ public class GenericHttp2ServerTransportListener extends AbstractServerTransport
     private BiStreamServerCallListener startBiStreaming(
             RpcInvocation invocation, Invoker<?> invoker, Http2ServerChannelObserver responseObserver) {
         return new BiStreamServerCallListener(invocation, invoker, responseObserver);
+    }
+
+    @Override
+    protected void initializeAltSvc(URL url) {
+        if (TripleProtocol.isHttp3Enabled(url)) {
+            int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+            serverChannelObserver.setAltSvc("h3=\":" + bindPort + "\"");
+        }
     }
 
     @Override

@@ -52,7 +52,7 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
             return;
         }
         Channel nettyChannel = ((Channel) channel);
-        final Attribute<Boolean> attr = nettyChannel.attr(GO_AWAY_KEY);
+        Attribute<Boolean> attr = nettyChannel.attr(GO_AWAY_KEY);
         if (Boolean.TRUE.equals(attr.get())) {
             return;
         }
@@ -101,12 +101,16 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         ctx.fireChannelActive();
-        NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), connectionClient.getUrl(), connectionClient);
+        Channel ch = ctx.channel();
+        NettyChannel.getOrAddChannel(ch, connectionClient.getUrl(), connectionClient);
         if (!connectionClient.isClosed()) {
-            connectionClient.onConnected(ctx.channel());
+            connectionClient.onConnected(ch);
             if (LOGGER.isInfoEnabled()) {
-                LOGGER.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress()
-                        + " is established.");
+                LOGGER.info(
+                        "The connection {} of {} -> {} is established.",
+                        ch,
+                        AddressUtils.getLocalAddressKey(ch),
+                        AddressUtils.getRemoteAddressKey(ch));
             }
         } else {
             ctx.close();
@@ -114,17 +118,27 @@ public class NettyConnectionHandler extends ChannelInboundHandlerAdapter impleme
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        LOGGER.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Channel error:%s", ctx.channel()), cause);
-        ctx.close();
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        Channel ch = ctx.channel();
+        try {
+            Attribute<Boolean> goawayAttr = ch.attr(GO_AWAY_KEY);
+            if (!Boolean.TRUE.equals(goawayAttr.get())) {
+                reconnect(ch);
+            }
+            LOGGER.info(
+                    "The connection {} of {} -> {} is disconnected.",
+                    ch,
+                    AddressUtils.getLocalAddressKey(ch),
+                    AddressUtils.getRemoteAddressKey(ch));
+        } finally {
+            NettyChannel.removeChannel(ch);
+        }
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
-        Attribute<Boolean> goawayAttr = ctx.channel().attr(GO_AWAY_KEY);
-        if (!Boolean.TRUE.equals(goawayAttr.get())) {
-            reconnect(ctx.channel());
-        }
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        LOGGER.warn(TRANSPORT_UNEXPECTED_EXCEPTION, "", "", String.format("Channel error:%s", ctx.channel()), cause);
+        ctx.close();
     }
 }

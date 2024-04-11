@@ -29,6 +29,11 @@ import io.netty.incubator.codec.quic.QuicStreamChannel;
 public class Http3ChannelAddressAccessor implements ChannelAddressAccessor {
 
     @Override
+    public String getProtocol() {
+        return "UDP";
+    }
+
+    @Override
     public InetSocketAddress getRemoteAddress(Channel channel) {
         if (channel instanceof QuicStreamChannel) {
             return (InetSocketAddress) ((QuicStreamChannel) channel).parent().remoteSocketAddress();

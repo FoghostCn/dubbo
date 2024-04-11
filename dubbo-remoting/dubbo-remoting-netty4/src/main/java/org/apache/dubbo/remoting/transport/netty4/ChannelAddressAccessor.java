@@ -26,6 +26,8 @@ import io.netty.channel.Channel;
 @SPI(scope = ExtensionScope.FRAMEWORK)
 public interface ChannelAddressAccessor {
 
+    String getProtocol();
+
     InetSocketAddress getRemoteAddress(Channel channel);
 
     InetSocketAddress getLocalAddress(Channel channel);

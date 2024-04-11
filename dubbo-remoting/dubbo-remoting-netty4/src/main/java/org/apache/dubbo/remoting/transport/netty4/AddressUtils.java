@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
@@ -50,5 +51,29 @@ public final class AddressUtils {
             }
         }
         return (InetSocketAddress) channel.localAddress();
+    }
+
+    public static String getRemoteAddressKey(Channel channel) {
+        InetSocketAddress address;
+        for (int i = 0, len = ACCESSORS.size(); i < len; i++) {
+            ChannelAddressAccessor accessor = ACCESSORS.get(i);
+            address = accessor.getRemoteAddress(channel);
+            if (address != null) {
+                return accessor.getProtocol() + ' ' + NetUtils.toAddressString(address);
+            }
+        }
+        return NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
+    }
+
+    public static String getLocalAddressKey(Channel channel) {
+        InetSocketAddress address;
+        for (int i = 0, len = ACCESSORS.size(); i < len; i++) {
+            ChannelAddressAccessor accessor = ACCESSORS.get(i);
+            address = accessor.getLocalAddress(channel);
+            if (address != null) {
+                return accessor.getProtocol() + ' ' + NetUtils.toAddressString(address);
+            }
+        }
+        return NetUtils.toAddressString((InetSocketAddress) channel.localAddress());
     }
 }
