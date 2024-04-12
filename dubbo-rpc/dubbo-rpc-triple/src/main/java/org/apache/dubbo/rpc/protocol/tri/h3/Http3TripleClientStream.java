@@ -22,7 +22,9 @@ import org.apache.dubbo.rpc.protocol.tri.stream.AbstractTripleClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.ClientStream;
 import org.apache.dubbo.rpc.protocol.tri.stream.TripleStreamChannelFuture;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleCommandOutBoundHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleGoAwayHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleHttp2ClientResponseHandler;
+import org.apache.dubbo.rpc.protocol.tri.transport.TripleTailHandler;
 import org.apache.dubbo.rpc.protocol.tri.transport.TripleWriteQueue;
 
 import java.util.concurrent.Executor;
@@ -63,7 +65,9 @@ public final class Http3TripleClientStream extends AbstractTripleClientStream {
                 ch.pipeline()
                         .addLast(Http3ClientFrameCodec.INSTANCE)
                         .addLast(new TripleCommandOutBoundHandler())
-                        .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()));
+                        .addLast(new TripleHttp2ClientResponseHandler(createTransportListener()))
+                        .addLast(new TripleGoAwayHandler())
+                        .addLast(new TripleTailHandler());
             }
         };
         TripleStreamChannelFuture future = new TripleStreamChannelFuture(parent);

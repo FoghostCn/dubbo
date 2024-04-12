@@ -108,14 +108,14 @@ public class NettyHttp3Server extends AbstractServer {
                     @Override
                     protected void initChannel(QuicChannel ch) {
                         ch.pipeline()
+                                .addLast(nettyServerHandler)
+                                .addLast(new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
                                 .addLast(new Http3ServerConnectionHandler(new ChannelInitializer<QuicStreamChannel>() {
                                     @Override
                                     protected void initChannel(QuicStreamChannel ch) {
                                         ch.pipeline()
-                                                .addLast(nettyServerHandler)
                                                 .addLast(NettyHttp3FrameCodec.INSTANCE)
                                                 .addLast(new HttpWriteQueueHandler())
-                                                .addLast(new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
                                                 .addLast(selectorHandler);
                                     }
                                 }));

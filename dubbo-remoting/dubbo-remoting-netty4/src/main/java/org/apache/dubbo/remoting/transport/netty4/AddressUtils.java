@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 
 import io.netty.channel.Channel;
@@ -62,7 +63,11 @@ public final class AddressUtils {
                 return accessor.getProtocol() + ' ' + NetUtils.toAddressString(address);
             }
         }
-        return NetUtils.toAddressString((InetSocketAddress) channel.remoteAddress());
+        InetSocketAddress remoteAddress = (InetSocketAddress) channel.remoteAddress();
+        if (remoteAddress == null) {
+            return "UNKNOWN";
+        }
+        return NetUtils.toAddressString(remoteAddress);
     }
 
     public static String getLocalAddressKey(Channel channel) {
@@ -74,6 +79,10 @@ public final class AddressUtils {
                 return accessor.getProtocol() + ' ' + NetUtils.toAddressString(address);
             }
         }
-        return NetUtils.toAddressString((InetSocketAddress) channel.localAddress());
+        SocketAddress localAddress = channel.localAddress();
+        if (localAddress == null) {
+            return "UNKNOWN";
+        }
+        return NetUtils.toAddressString((InetSocketAddress) localAddress);
     }
 }
