@@ -140,6 +140,11 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-slf4j-impl</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.apache.dubbo</groupId>
+      <artifactId>dubbo-native</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -183,4 +188,59 @@
       </plugin>
     </plugins>
   </build>
+  <profiles>
+    <profile>
+      <id>native</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <release>17</release>
+              <fork>true</fork>
+              <verbose>true</verbose>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.graalvm.buildtools</groupId>
+            <artifactId>native-maven-plugin</artifactId>
+            <version>0.10.1</version>
+            <configuration>
+              <mainClass>org.apache.dubbo.demo.provider.ApiProvider</mainClass>
+              <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+              <metadataRepository>
+                <enabled>true</enabled>
+              </metadataRepository>
+              <requiredVersion>22.3</requiredVersion>
+            </configuration>
+            <executions>
+              <execution>
+                <id>add-reachability-metadata</id>
+                <goals>
+                  <goal>add-reachability-metadata</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-maven-plugin</artifactId>
+            <version>${project.version}</version>
+            <configuration>
+              <mainClass>org.apache.dubbo.demo.provider.ApiProvider</mainClass>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>dubbo-process-aot</goal>
+                </goals>
+                <phase>process-sources</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>
